@@ -1,0 +1,23 @@
+pipeline{
+agent any
+triggers{
+pollSCM('* * * * *')
+}
+stages{
+stage('SCM'){
+steps{
+checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '9fa23229-9fe8-4ee7-9f5b-c582d0a03daa', url: 'https://github.com/swamyborra/mavenrepo.git']]])
+}
+}
+stage('nexus'){
+steps{
+nexusArtifactUploader artifacts: [[artifactId: 'studentapp', classifier: '', file: '/var/lib/jenkins/workspace/swamypipeline/target/studentapp-2.5-SNAPSHOT.war', type: 'war']], credentialsId: '713a461a-9143-413a-b5a2-255fbf3db92c', groupId: 'studentapp', nexusUrl: 'http://3.110.153.94:8081/nexus/', nexusVersion: 'nexus2', protocol: 'http', repository: 'studentapp123', version: '2.5-SNAPSHOT'
+}
+}
+stage('deploy'){
+steps{
+deploy adapters: [tomcat7(credentialsId: 'eb0c8b8b-4c50-4d25-8835-4a28313d7cd1', path: '', url: 'http://13.235.87.151:8080/manager/html')], contextPath: 'studentapp', war: '**/*.war'
+}
+}
+}
+} //pipeline closed
